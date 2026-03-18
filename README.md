@@ -57,7 +57,7 @@ finance-pipeline/
 - [x] Phase 1 - GCP setup & repo structure
 - [X] Phase 2 - Tiingo & FRED ingestion scripts
 - [ ] Phase 3 - GCS to BigQuery loading
-- [ ] Phase 4 - dbt transformations
+- [ ] Phase 4 - dbt transformations + authorised views
 - [ ] Phase 5 - Airflow orchestration
 - [ ] Phase 6 - Looker Studio dashboard
 - [ ] Phase 7 - Docker & Cloud Run deployment
@@ -86,8 +86,15 @@ finance-pipeline/
 - **FRED for macro indicators** - offiial Federal Reserve data, free and unlimited, covers inflation, GDP, interest
 - **Timestamped filenames** - every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging
 - **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
-- **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.py`
+- **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.
 
+### Phase 4 (planned)
+- **Authorised views for mart layer** — BigQuery authorised 
+views will be implemented to restrict access to raw tables. 
+Dashboard users and Looker Studio will only have access to 
+mart models, not underlying raw or staging data. This mirrors 
+enterprise data governance patterns and separates 
+presentation layer access from raw data access
 
 ## Learnings & Obstacles
 
