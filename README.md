@@ -87,6 +87,8 @@ finance-pipeline/
 - **Timestamped filenames** - every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging
 - **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
 - **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.py`
+- **pytest for JSON validation** — every API response is validated before landing in GCS using pytest. Tests check response structure, required fields, data types and null checks. This catches upstream API changes early and ensures data quality before it enters the pipeline. Running tests: `pytest tests/test_ingestion.py -v`
+
 
 
 ## Learnings & Obstacles
@@ -103,6 +105,8 @@ finance-pipeline/
 - **SSL certificate error on macOS with FRED API** - macOS Python doesn't trust all certificates by default. Fixed with SSL context override in the script
 - **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
 - **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer. Fields include OHLC prices, adjusted prices, volume, date and split factor — everything needed for the dashboard
+- **JSON testing in interviews** — was asked about JSON testing in an interview and couldn't answer confidently. Implemented pytest unit tests to validate every API response before it lands in GCS. Tests cover: response type, non-empty checks, required field presence, data type validation, positive price checks and filename structure. 18 tests passing.
+
 
 
 
