@@ -20,9 +20,42 @@ Two reasons - portfolio and personal utility.
 
 I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airflow) while also giving me a live dashboard I actually use to track my finances.
 
+## Personal Use Cases
+- Track personal stock watchlist performance
+- Monitor macro trends affecting savings and mortgage
+- Compare crypto vs equity performance
+- Visualise inflation impact on purchasing power
+
+## Project Structure
+\```
+finance-pipeline/
+├── ingestion/
+│   ├── tiingo_stocks.py    # Stock price ingestion
+│   ├── tiingo_crypto.py    # Crypto price ingestion
+│   ├── fred_macro.py       # Macro indicators ingestion
+│   └── run_all.py          # Run all ingestion scripts
+├── loading/                # GCS → BigQuery loaders (Phase 3)
+├── dbt/                    # Transformation models (Phase 4)
+├── airflow/                # DAGs (Phase 5)
+├── tests/                  # Unit tests
+├── .env.example            # Environment variable template
+├── requirements.txt        # Python dependencies
+└── README.md
+\```
+
+## Data Sources
+| Source | Data | Frequency |
+|--------|------|-----------|
+| Tiingo | Stock prices (AAPL, GOOGL, MSFT, TSLA, META) | Daily |
+| Tiingo | Crypto prices (BTC, ETH, SOL, XRP) | Daily |
+| FRED | Inflation (CPI) | Monthly |
+| FRED | Interest rates | Monthly |
+| FRED | GDP | Quarterly |
+| FRED | Unemployment | Monthly |
+
 ## Project Phases
 - [x] Phase 1 - GCP setup & repo structure
-- [ ] Phase 2 - Tiingo & FRED ingestion scripts
+- [X] Phase 2 - Tiingo & FRED ingestion scripts
 - [ ] Phase 3 - GCS to BigQuery loading
 - [ ] Phase 4 - dbt transformations
 - [ ] Phase 5 - Airflow orchestration
@@ -46,6 +79,12 @@ I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airf
 - **GCS as immutable raw layer** - raw API responses are landed in GCS untouched befoere loading to BigQuery. This means data can always be reloaded or reprocessed from source if anything goes wrong downstream.
 - **VS Code for editing, terminal for commands** - cleaner workflow, reduces risk of errors when writing file content.
 
+### Phase 2
+- **Tiingo for both stocks and crypto** - single API key, consistent JSON structure, generous free tier
+- **FRED for macro indicators** - offiial Federal Reserve data, free and unlimited, covers inflation, GDP, interest
+- **Timestamped filenames** - every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging
+- **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
+
 ## Learnings & Obstacles
 
 ### Phase 1
@@ -53,6 +92,12 @@ I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airf
 - **GitHub Password Authentication Deprecated** - git push via password no longer works. Resolved using a Personal Access token (PAT) instead 
 - **macOS 12 Homebrew Compatibility** - Homebrew flagged macOS 12 as unsupoorted but worked correctly. No action required
 - **Terminal vs VS Code for File Editing** - writing file content via terminal commands led to mangled output. Switched to VS Code for all file editing going forward
+
+### Phase 2
+- **ModuleNotFoundError for google.cloud** - venv was running Python 3.9 which had package conflicts. Rebuilt venv cleanly with Python 3.11 and reinstalled all dependencies
+- **Application Default Credentials lost after venv rebuild** - rebuidling the venv doesn't affect system credentials but a new terminal session needed 'gcloud auth application- default login' to be re-run
+- **SSL certificate error on macOS with FRED API** - macOS Python doesn't trust all certificates by default. Fixed with SSL context override in the script
+- **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
 
 
 
