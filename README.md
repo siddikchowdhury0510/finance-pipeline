@@ -43,6 +43,7 @@ I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airf
 - **Tiingo over Alpha Vantage** - Tiingo's free tier offers 500 requests/day vs Alpha Vantage's 25, making it practical for development and testing.
 - **FRED API for macro data** - free, unlimited, and run by the Federal Reserve. Best source for inflation, interest rates.
 - **Application Default Credentials over JSON keys** - more secure, industry best practise, avoids risk of credentials being comitted to GitHub.
+- **GCS as immutable raw layer** - raw API responses are landed in GCS untouched befoere loading to BigQuery. This means data can always be reloaded or reprocessed from source if anything goes wrong downstream.
 - **VS Code for editing, terminal for commands** - cleaner workflow, reduces risk of errors when writing file content.
 
 ## Learnings & Obstacles
