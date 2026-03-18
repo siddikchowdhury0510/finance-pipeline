@@ -5,6 +5,7 @@ from google.cloud import storage
 from fredapi import Fred
 from dotenv import load_dotenv
 
+#added to get around SSL certificate error on macOS
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 

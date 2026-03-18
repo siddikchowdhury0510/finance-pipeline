@@ -106,13 +106,12 @@ afterthought.
 - **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
 - **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.
 
+### Phase 3
+- **Deduplication handled in dbt, not loading layer** — the raw BigQuery tables intentionally preserve all records including duplicates from multiple pipeline runs. Deduplication happens in dbt staging models where the logic is version controlled, testable and rerunnable against the original raw data. This follows the principle of separation of concerns — each layer has one job. Raw layer preserves, staging layer cleans.
+
+
 ### Phase 4 (planned)
-- **Authorised views for mart layer** — BigQuery authorised 
-views will be implemented to restrict access to raw tables. 
-Dashboard users and Looker Studio will only have access to 
-mart models, not underlying raw or staging data. This mirrors 
-enterprise data governance patterns and separates 
-presentation layer access from raw data access
+- **Authorised views for mart layer** — BigQuery authorised views will be implemented to restrict access to raw tables. Dashboard users and Looker Studio will only have access to mart models, not underlying raw or staging data. This mirrors enterprise data governance patterns and separates presentation layer access from raw data access.
 
 ## Learnings & Obstacles
 
@@ -129,6 +128,10 @@ presentation layer access from raw data access
 - **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
 - **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer. Fields include OHLC prices, adjusted prices, volume, date and split factor — everything needed for the dashboard
 - **Git merge conflicts** — repeatedly hit merge conflicts on README.md caused by making changes both locally and on GitHub without pulling first. Resolved using `git checkout --theirs` to accept the remote version, then recommitting. Key lesson: always run `git pull origin main` before making any local changes to avoid diverged branches. This is standard practice in team environments.
+
+### Phase 3
+- **Duplicate rows from multiple ingestion runs** — running the ingestion script multiple times created duplicate rows in BigQuery raw tables. Deliberately left in the raw layer as this is expected behaviour. Deduplication will be handled in dbt staging models using ROW_NUMBER() or DISTINCT, keeping the raw layer as an immutable audit trail.
+
 
 
 
