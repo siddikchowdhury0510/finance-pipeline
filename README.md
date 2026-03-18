@@ -1,7 +1,7 @@
 # finance-pipeline
 
 ## Overview
-An end-to-end personal finance data pipeline built as a Data Engineering portfolio project. Pulls live marketdata from APIs, stores it in GCP, transforms it with dbt, and visualises it in Looker Studio.
+An end-to-end personal finance data pipeline built as a Data Engineering portfolio project. Pulls live market data from APIs, stores it in GCP, transforms it with dbt, and visualises it in Looker Studio.
 
 ## Architecture 
 Tiingo/FRED APIs -> GCS (raw layer) -> BigQuery -> dbt -> Looker Studio
