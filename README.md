@@ -54,13 +54,13 @@ finance-pipeline/
 | FRED | Unemployment | Monthly |
 
 ## Project Phases
-- [x] Phase 1 - GCP setup & repo structure
-- [X] Phase 2 - Tiingo & FRED ingestion scripts
-- [ ] Phase 3 - GCS to BigQuery loading
-- [ ] Phase 4 - dbt transformations + authorised views
-- [ ] Phase 5 - Airflow orchestration
-- [ ] Phase 6 - Looker Studio dashboard
-- [ ] Phase 7 - Docker & Cloud Run deployment
+- [x] Phase 1 — GCP setup & repo structure
+- [x] Phase 2 — Tiingo & FRED ingestion scripts + tests
+- [ ] Phase 3 — GCS to BigQuery loading + tests
+- [ ] Phase 4 — dbt transformations + authorised views + tests
+- [ ] Phase 5 — Airflow orchestration + tests
+- [ ] Phase 6 — Looker Studio dashboard
+- [ ] Phase 7 — Docker & Cloud Run deployment
 
 ## Setup
 1. Clone the repo
@@ -73,6 +73,16 @@ finance-pipeline/
 
 
 ## Key Technical Decisions 
+
+### Testing approach (all phases)
+- **Tests built alongside each phase** — rather than treating 
+testing as a separate phase, tests are written alongside each 
+component. Ingestion tests validate API responses and GCS 
+landing. Loading tests validate schema and row counts. dbt 
+tests validate transformation logic. Airflow tests validate 
+DAG structure. This mirrors professional DE team practices 
+where testing is part of the definition of done, not an 
+afterthought.
 
 ### Phase 1
 - **Tiingo over Alpha Vantage** - Tiingo's free tier offers 500 requests/day vs Alpha Vantage's 25, making it practical for development and testing.
