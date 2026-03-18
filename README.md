@@ -27,7 +27,7 @@ I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airf
 - Visualise inflation impact on purchasing power
 
 ## Project Structure
-\```
+```
 finance-pipeline/
 ├── ingestion/
 │   ├── tiingo_stocks.py    # Stock price ingestion
@@ -41,7 +41,7 @@ finance-pipeline/
 ├── .env.example            # Environment variable template
 ├── requirements.txt        # Python dependencies
 └── README.md
-\```
+```
 
 ## Data Sources
 | Source | Data | Frequency |
@@ -64,11 +64,13 @@ finance-pipeline/
 
 ## Setup
 1. Clone the repo
-2. create a virtual enviroment: 'python3 -m venv venv'
-3. Activate it: 'source venv/bin/activate'
-4. Install dependencies: 'pip install -r requirements.txt'
-5. Copy '.env.example' to 'env' and fill in your credentials
-6. Authenticate with GCP: 'gcloud auth application-default login'
+2. Create a virtual environment: `python3.11 -m venv venv`
+3. Activate it: `source venv/bin/activate`
+4. Install dependencies: `pip install -r requirements.txt`
+5. Copy `.env.example` to `.env` and fill in your credentials
+6. Authenticate with GCP: `gcloud auth application-default login`
+7. Run ingestion: `cd ingestion && python run_all.py`
+
 
 ## Key Technical Decisions 
 
@@ -84,6 +86,8 @@ finance-pipeline/
 - **FRED for macro indicators** - offiial Federal Reserve data, free and unlimited, covers inflation, GDP, interest
 - **Timestamped filenames** - every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging
 - **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
+- **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.py`
+
 
 ## Learnings & Obstacles
 
@@ -98,6 +102,8 @@ finance-pipeline/
 - **Application Default Credentials lost after venv rebuild** - rebuidling the venv doesn't affect system credentials but a new terminal session needed 'gcloud auth application- default login' to be re-run
 - **SSL certificate error on macOS with FRED API** - macOS Python doesn't trust all certificates by default. Fixed with SSL context override in the script
 - **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
+- **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer. Fields include OHLC prices, adjusted prices, volume, date and split factor — everything needed for the dashboard
+
 
 
 
