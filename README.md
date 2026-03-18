@@ -62,6 +62,14 @@ finance-pipeline/
 - [ ] Phase 6 — Looker Studio dashboard
 - [ ] Phase 7 — Docker & Cloud Run deployment
 
+## Git Workflow
+Always follow this order to avoid merge conflicts:
+1. `git pull origin main` — get latest changes first
+2. Make your changes
+3. `git add .`
+4. `git commit -m "your message"`
+5. `git push origin main`
+
 ## Setup
 1. Clone the repo
 2. Create a virtual environment: `python3.11 -m venv venv`
@@ -120,6 +128,8 @@ presentation layer access from raw data access
 - **SSL certificate error on macOS with FRED API** - macOS Python doesn't trust all certificates by default. Fixed with SSL context override in the script
 - **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
 - **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer. Fields include OHLC prices, adjusted prices, volume, date and split factor — everything needed for the dashboard
+- **Git merge conflicts** — repeatedly hit merge conflicts on README.md caused by making changes both locally and on GitHub without pulling first. Resolved using `git checkout --theirs` to accept the remote version, then recommitting. Key lesson: always run `git pull origin main` before making any local changes to avoid diverged branches. This is standard practice in team environments.
+
 
 
 
