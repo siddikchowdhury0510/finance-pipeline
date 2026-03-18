@@ -1,0 +1,19 @@
+# Enviroment varables - never commit secrets 
+.env 
+
+#Python
+__pycache__/
+*.pyc 
+venv/
+.venv/
+
+#GCP credentials
+*.json
+
+#dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+#OS
+.DS_Store

@@ -1,0 +1,18 @@
+#GCP 
+google-cloud-storage
+google-cloud-bigquery
+
+#API requests
+requests
+
+# Enviroment variables
+python-dotenv
+
+#Data processing
+pandas
+
+#Tiingo client
+tiingo 
+
+#FRED API
+fredapi
