@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def load_stocks_to_bigquery():
-    """Read stock JSON files from GCS and load to BigQuery"""
+def load_macro_to_bigquery():
+    """Read FRED macro JSON files from GCS and load to BigQuery"""
     
     bucket_name = os.getenv('GCP_BUCKET_NAME')
     project_id = os.getenv('GCP_PROJECT_ID')
     dataset_id = 'finance_raw'
-    table_id = 'raw_stocks'
+    table_id = 'raw_macro'
     
     if not bucket_name or not project_id:
         raise ValueError("Missing GCP_BUCKET_NAME or GCP_PROJECT_ID in .env")
@@ -24,19 +24,9 @@ def load_stocks_to_bigquery():
     
     # Define BigQuery schema
     schema = [
-        bigquery.SchemaField('ticker', 'STRING'),
+        bigquery.SchemaField('indicator', 'STRING'),
         bigquery.SchemaField('date', 'TIMESTAMP'),
-        bigquery.SchemaField('open', 'FLOAT'),
-        bigquery.SchemaField('high', 'FLOAT'),
-        bigquery.SchemaField('low', 'FLOAT'),
-        bigquery.SchemaField('close', 'FLOAT'),
-        bigquery.SchemaField('volume', 'INTEGER'),
-        bigquery.SchemaField('adj_close', 'FLOAT'),
-        bigquery.SchemaField('adj_open', 'FLOAT'),
-        bigquery.SchemaField('adj_high', 'FLOAT'),
-        bigquery.SchemaField('adj_low', 'FLOAT'),
-        bigquery.SchemaField('div_cash', 'FLOAT'),
-        bigquery.SchemaField('split_factor', 'FLOAT'),
+        bigquery.SchemaField('value', 'FLOAT'),
         bigquery.SchemaField('ingested_at', 'TIMESTAMP'),
     ]
     
@@ -52,46 +42,43 @@ def load_stocks_to_bigquery():
         bq_client.create_table(table)
         print(f"Created table {table_ref}")
     
-    # List all stock files in GCS
-    blobs = bucket.list_blobs(prefix='tiingo/stocks/')
+    # List all macro files in GCS
+    blobs = bucket.list_blobs(prefix='fred/')
     
     rows_to_insert = []
     ingested_at = datetime.utcnow().isoformat()
     
     for blob in blobs:
-        # Extract ticker from filename e.g. AAPL_2026-03-18_15-54-24.json
+        # Extract indicator name from filename
+        # e.g. fred/inflation_2026-03-18_16-10-28.json -> inflation
         filename = blob.name.split('/')[-1]
-        ticker = filename.split('_')[0]
+        indicator = filename.split('_')[0]
         
-        # Download and parse JSON
         content = blob.download_as_text()
         data = json.loads(content)
         
         for record in data:
             rows_to_insert.append({
-                'ticker': ticker,
+                'indicator': indicator,
                 'date': record.get('date'),
-                'open': record.get('open'),
-                'high': record.get('high'),
-                'low': record.get('low'),
-                'close': record.get('close'),
-                'volume': record.get('volume'),
-                'adj_close': record.get('adjClose'),
-                'adj_open': record.get('adjOpen'),
-                'adj_high': record.get('adjHigh'),
-                'adj_low': record.get('adjLow'),
-                'div_cash': record.get('divCash'),
-                'split_factor': record.get('splitFactor'),
+                'value': record.get('value'),
                 'ingested_at': ingested_at,
             })
     
-    # Load to BigQuery
-    errors = bq_client.insert_rows_json(table_ref, rows_to_insert)
+    # Load to BigQuery with WRITE_TRUNCATE to avoid duplicates
+    job_config = bigquery.LoadJobConfig(
+        write_disposition="WRITE_TRUNCATE",
+        schema=schema
+)
     
-    if errors:
-        print(f"✗ Errors inserting rows: {errors}")
-    else:
-        print(f"✓ {len(rows_to_insert)} rows loaded to {table_ref}")
+    job = bq_client.load_table_from_json(
+        rows_to_insert,
+        table_ref,
+        job_config=job_config
+)
+    job.result()  # Wait for job to complete
+
+    print(f"✓ {len(rows_to_insert)} rows loaded to {table_ref}")
 
 if __name__ == '__main__':
-    load_stocks_to_bigquery()
+    load_macro_to_bigquery()

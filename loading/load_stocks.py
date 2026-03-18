@@ -85,13 +85,20 @@ def load_stocks_to_bigquery():
                 'ingested_at': ingested_at,
             })
     
-    # Load to BigQuery
-    errors = bq_client.insert_rows_json(table_ref, rows_to_insert)
+    # Load to BigQuery with WRITE_TRUNCATE to avoid duplicates
+    job_config = bigquery.LoadJobConfig(
+        write_disposition="WRITE_TRUNCATE",
+        schema=schema
+)
     
-    if errors:
-        print(f"✗ Errors inserting rows: {errors}")
-    else:
-        print(f"✓ {len(rows_to_insert)} rows loaded to {table_ref}")
+    job = bq_client.load_table_from_json(
+        rows_to_insert,
+        table_ref,
+        job_config=job_config
+)
+    job.result()  # Wait for job to complete
+
+    print(f"✓ {len(rows_to_insert)} rows loaded to {table_ref}")
 
 if __name__ == '__main__':
     load_stocks_to_bigquery()
