@@ -54,13 +54,13 @@ finance-pipeline/
 | FRED | Unemployment | Monthly |
 
 ## Project Phases
-- [x] Phase 1 - GCP setup & repo structure
-- [X] Phase 2 - Tiingo & FRED ingestion scripts
-- [ ] Phase 3 - GCS to BigQuery loading
-- [ ] Phase 4 - dbt transformations
-- [ ] Phase 5 - Airflow orchestration
-- [ ] Phase 6 - Looker Studio dashboard
-- [ ] Phase 7 - Docker & Cloud Run deployment
+- [x] Phase 1 — GCP setup & repo structure
+- [x] Phase 2 — Tiingo & FRED ingestion scripts + tests
+- [ ] Phase 3 — GCS to BigQuery loading + tests
+- [ ] Phase 4 — dbt transformations + authorised views + tests
+- [ ] Phase 5 — Airflow orchestration + tests
+- [ ] Phase 6 — Looker Studio dashboard
+- [ ] Phase 7 — Docker & Cloud Run deployment
 
 ## Setup
 1. Clone the repo
@@ -74,6 +74,16 @@ finance-pipeline/
 
 ## Key Technical Decisions 
 
+### Testing approach (all phases)
+- **Tests built alongside each phase** — rather than treating 
+testing as a separate phase, tests are written alongside each 
+component. Ingestion tests validate API responses and GCS 
+landing. Loading tests validate schema and row counts. dbt 
+tests validate transformation logic. Airflow tests validate 
+DAG structure. This mirrors professional DE team practices 
+where testing is part of the definition of done, not an 
+afterthought.
+
 ### Phase 1
 - **Tiingo over Alpha Vantage** - Tiingo's free tier offers 500 requests/day vs Alpha Vantage's 25, making it practical for development and testing.
 - **FRED API for macro data** - free, unlimited, and run by the Federal Reserve. Best source for inflation, interest rates.
@@ -86,10 +96,15 @@ finance-pipeline/
 - **FRED for macro indicators** - offiial Federal Reserve data, free and unlimited, covers inflation, GDP, interest
 - **Timestamped filenames** - every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging
 - **SSL fix for FRED on macOS** - macOS Python requires an explicit SSL context override for FRED API calls. Added 'ssl.create_unverified_context' as a workaround
-- **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.py`
-- **pytest for JSON validation** — every API response is validated before landing in GCS using pytest. Tests check response structure, required fields, data types and null checks. This catches upstream API changes early and ensures data quality before it enters the pipeline. Running tests: `pytest tests/test_ingestion.py -v`
+- **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow will trigger the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.
 
-
+### Phase 4 (planned)
+- **Authorised views for mart layer** — BigQuery authorised 
+views will be implemented to restrict access to raw tables. 
+Dashboard users and Looker Studio will only have access to 
+mart models, not underlying raw or staging data. This mirrors 
+enterprise data governance patterns and separates 
+presentation layer access from raw data access
 
 ## Learnings & Obstacles
 
@@ -105,8 +120,6 @@ finance-pipeline/
 - **SSL certificate error on macOS with FRED API** - macOS Python doesn't trust all certificates by default. Fixed with SSL context override in the script
 - **Silent script failures** - early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: alwasy test error handling explicitly
 - **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer. Fields include OHLC prices, adjusted prices, volume, date and split factor — everything needed for the dashboard
-- **JSON testing in interviews** — was asked about JSON testing in an interview and couldn't answer confidently. Implemented pytest unit tests to validate every API response before it lands in GCS. Tests cover: response type, non-empty checks, required field presence, data type validation, positive price checks and filename structure. 18 tests passing.
-
 
 
 
