@@ -56,7 +56,7 @@ finance-pipeline/
 ## Project Phases
 - [x] Phase 1 — GCP setup & repo structure
 - [x] Phase 2 — Tiingo & FRED ingestion scripts + tests
-- [ ] Phase 3 — GCS to BigQuery loading + tests
+- [x] Phase 3 — GCS to BigQuery loading + tests
 - [ ] Phase 4 — dbt transformations + authorised views + tests
 - [ ] Phase 5 — Airflow orchestration + tests
 - [ ] Phase 6 — Looker Studio dashboard
