@@ -63,14 +63,14 @@ finance-pipeline/
 - [ ] Phase 7 — Docker & Cloud Run deployment
 
 ## Git Workflow
-** Every session start:**
+**Every session start:**
 1. 'cd/Users/Siddik/finance-pipeline' - navigate to project
 2. 'source/venv/bin/activate' - activate virtual enviroment
 3. 'git pull origin main' get latest changes
 
 **Every session end:**
 Always follow this order to avoid merge conflicts:
-1. Cmd + S - save change
+1. 'Cmd + S' - save change
 2. `git add .`- stage all changes
 3. `git commit -m "your message"` - save a snapshot with commentary
 4. `git push origin main` - upload to GitHub
