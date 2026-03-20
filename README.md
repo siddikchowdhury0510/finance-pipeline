@@ -63,19 +63,26 @@ finance-pipeline/
 - [ ] Phase 7 — Docker & Cloud Run deployment
 
 ## Git Workflow
+** Every session star:**
+1. 'cd/Users/Siddik/finance-pipeline' - navigate to project
+2. 'source/venv/bin/activate' - activate virtual enviroment
+3. 'git pull origin main' get latest changes
+
+**Every session end:**
 Always follow this order to avoid merge conflicts:
-1. `git pull origin main` — get latest changes first
-2. Make your changes
-3. `git add .`
-4. `git commit -m "your message"`
-5. `git push origin main`
+1. Cmd + S - save change
+2. `git add .`- stage all changes
+3. `git commit -m "your message"` - save a snapshot with commentary
+4. `git push origin main` - upload to GitHub
 
 **Golden Rules:**
 - Always 'git pull' before making any local changes
 - Never edit files directly on GitHub - always edit locally in VS Code and Push. Editing in both places causes diverged branches and merge conflicts
 - Always 'cd /Users/siddik/finance-pipeline' at the start of every session
 - Always 'source venv/bin/activate' at the start of every session
--Use 'git revert' not 'git reset' on shared branches to avoid rewriting history
+- Use 'git revert' not 'git reset' on shared branches to avoid rewriting history
+- Use 'git log --oneline -5' to see recent commits
+- Never commit '.env' - it contains your secrets
 
 ## Setup
 1. Clone the repo
