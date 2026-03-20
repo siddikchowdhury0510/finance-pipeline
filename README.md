@@ -70,6 +70,13 @@ Always follow this order to avoid merge conflicts:
 4. `git commit -m "your message"`
 5. `git push origin main`
 
+**Golden Rules:**
+- Always 'git pull' before making any local changes
+- Never edit files directly on GitHub - always edit locally in VS Code and Push. Editing in both places causes diverged branches and merge conflicts
+- Always 'cd /Users/siddik/finance-pipeline' at the start of every session
+- Always 'source venv/bin/activate' at the start of every session
+-Use 'git revert' not 'git reset' on shared branches to avoid rewriting history
+
 ## Setup
 1. Clone the repo
 2. Create a virtual environment: `python3.11 -m venv venv`
