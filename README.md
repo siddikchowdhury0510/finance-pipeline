@@ -63,7 +63,7 @@ finance-pipeline/
 - [ ] Phase 7 — Docker & Cloud Run deployment
 
 ## Git Workflow
-** Every session star:**
+** Every session start:**
 1. 'cd/Users/Siddik/finance-pipeline' - navigate to project
 2. 'source/venv/bin/activate' - activate virtual enviroment
 3. 'git pull origin main' get latest changes
