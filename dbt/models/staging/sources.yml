@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: finance_raw
+    database: reliable-jet-490513-b4
+    schema: finance_raw
+    tables:
+      - name: raw_stocks
+        description: "Raw stock price data fro mTiingo API"
+      - name: raw_crypto
+        description: "Raw crypto price data from Tiingo API"
+      - name: raw_macro
+        description: "Raw macro economic data from FRED API"
