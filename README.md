@@ -68,6 +68,9 @@ finance-pipeline/
 2. 'source/venv/bin/activate' - activate virtual enviroment
 3. 'git pull origin main' get latest changes
 
+**Can't find your project directory?**
+Run 'find ~ -name "finance-pipeline" -type d' to locate it
+
 **Every session end:**
 Always follow this order to avoid merge conflicts:
 1. 'Cmd + S' - save change
