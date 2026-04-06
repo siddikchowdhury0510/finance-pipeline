@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: mart_market_daily
+    description: "Daily market prices with price change calculations, ready for dashboard"
+    columns:
+      - name: ticker
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null
+      - name: close
+        tests:
+          - not_null
+      - name: asset_type
+        tests:
+          - not_null
+
+  - name: mart_macro_indicators
+    description: "Macro economic indicators over time, ready for dashboard"
+    columns:
+      - name: date
+        tests:
+          - not_null
+      - name: indicator
+        tests:
+          - not_null
+
+  - name: mart_macro_market_correlation
+    description: "Market prices enriched with macro economic context"
+    columns:
+      - name: ticker
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null

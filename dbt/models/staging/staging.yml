@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_stocks
+    description: "Cleaned and deduplicated stock prices from Tiingo"
+    columns:
+      - name: ticker
+        description: "Stock ticker symbol"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'META']
+      - name: date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: close
+        description: "Closing price"
+        tests:
+          - not_null
+
+  - name: stg_crypto
+    description: "Cleaned and deduplicated crypto prices from Tiingo"
+    columns:
+      - name: ticker
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null
+      - name: close
+        tests:
+          - not_null
+
+  - name: stg_macro
+    description: "Cleaned macro economic indicators from FRED"
+    columns:
+      - name: indicator
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['inflation', 'interest', 'gdp', 'unemployment']
+      - name: date
+        tests:
+          - not_null
+      - name: value
+        tests:
+          - not_null

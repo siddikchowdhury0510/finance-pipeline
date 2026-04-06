@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: int_market_daily
+    description: "Combined stocks and crypto daily market data with asset type and currency"
+    columns:
+      - name: ticker
+        description: "Asset ticker symbol"
+        tests:
+          - not_null
+      - name: date
+        description: "Trading date"
+        tests:
+          - not_null
+      - name: asset_type
+        description: "Type of asset - stock or crypto"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['STOCKS', 'CRYPTO']
+      - name: currency
+        tests:
+          - not_null

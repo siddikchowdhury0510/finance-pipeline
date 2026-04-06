@@ -24,6 +24,7 @@ FINAL AS (
         INGESTED_AT
     FROM DEDUPED
     where ROW_NUM= 1 
+    AND VALUE IS NOT NULL -- remove historic NULL values
 
 )
 
