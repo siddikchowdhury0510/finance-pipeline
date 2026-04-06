@@ -28,19 +28,23 @@ I wanted a project that mirrors my production stack at work (dbt, BigQuery, Airf
 
 ## Project Structure
 ```
-finance-pipeline/
-├── ingestion/
-│   ├── tiingo_stocks.py    # Stock price ingestion
-│   ├── tiingo_crypto.py    # Crypto price ingestion
-│   ├── fred_macro.py       # Macro indicators ingestion
-│   └── run_all.py          # Run all ingestion scripts
-├── loading/                # GCS → BigQuery loaders (Phase 3)
-├── dbt/                    # Transformation models (Phase 4)
-├── airflow/                # DAGs (Phase 5)
-├── tests/                  # Unit tests
-├── .env.example            # Environment variable template
-├── requirements.txt        # Python dependencies
-└── README.md
+├── dbt/
+│   ├── models/
+│   │   ├── staging/
+│   │   │   ├── sources.yml
+│   │   │   ├── staging.yml
+│   │   │   ├── stg_stocks.sql
+│   │   │   ├── stg_crypto.sql
+│   │   │   └── stg_macro.sql
+│   │   ├── intermediate/
+│   │   │   ├── intermediate.yml
+│   │   │   └── int_market_daily.sql
+│   │   └── marts/
+│   │       ├── marts.yml
+│   │       ├── mart_market_daily.sql
+│   │       ├── mart_macro_indicators.sql
+│   │       └── mart_macro_market_correlation.sql
+
 ```
 
 ## Data Sources
@@ -57,7 +61,7 @@ finance-pipeline/
 - [x] Phase 1 — GCP setup & repo structure
 - [x] Phase 2 — Tiingo & FRED ingestion scripts + tests
 - [x] Phase 3 — GCS to BigQuery loading + tests
-- [ ] Phase 4 — dbt transformations + authorised views + tests
+- [x] Phase 4 — dbt transformations + authorised views + tests
 - [ ] Phase 5 — Airflow orchestration + tests
 - [ ] Phase 6 — Looker Studio dashboard
 - [ ] Phase 7 — Docker & Cloud Run deployment
@@ -128,8 +132,31 @@ afterthought.
 - **WRITE_TRUNCATE for raw BigQuery tables** — loading scripts use WRITE_TRUNCATE write disposition which truncates and replaces the table on every run. This prevents duplicate rows accumulating across multiple pipeline runs. GCS is the source of truth so BigQuery raw tables can always be safely reloaded. Incremental logic is handled in the dbt transformation layer.
 - **Explicit schemas over auto-detection** — every BigQuery table has an explicitly defined schema with column names and data types. No auto- detection. This prevents silent type errors and makes the pipeline predictable and documented.
 
-### Phase 4 (planned)
-- **Authorised views for mart layer** — BigQuery authorised views will be implemented to restrict access to raw tables. Dashboard users and Looker Studio will only have access to mart models, not underlying raw or staging data. This mirrors enterprise data governance patterns and separates presentation layer access from raw data access.
+### Phase 4
+- **UNION ALL over JOIN for int_market_daily** — stocks and 
+crypto share the same structure so UNION ALL stacks them 
+vertically into one unified market table. JOIN would create 
+cartesian combinations which is not what we want. Rule: same 
+structure = UNION ALL, different structure = JOIN
+- **Currency column added** — explicit currency column added 
+to int_market_daily to clarify all values are in USD. Stocks 
+hardcoded as USD, crypto uses quote_currency from Tiingo
+- **Full refresh over incremental** — marts use full refresh 
+at current data volumes. Data is small enough that full 
+refresh runs in seconds. Incremental models add complexity 
+that isn't justified yet. Can be refactored later
+- **dbt location must match BigQuery dataset location** — 
+profiles.yml location must be europe-west2 not EU. EU is a 
+multi-region, europe-west2 is a specific region. Mismatch 
+causes dataset not found errors
+- **Pivot pattern for macro correlation mart** — used CASE 
+WHEN with MAX to pivot indicator rows into columns. Separate 
+latest date CTEs for monthly and quarterly indicators to 
+handle different data frequencies
+- **NULL values filtered at staging layer** — FRED data 
+contains NULL values for certain historical dates. Filtered 
+in stg_macro FINAL CTE so NULLs never propagate to 
+downstream models
 
 ## Learnings & Obstacles
 
@@ -151,3 +178,30 @@ afterthought.
 - **Duplicate rows from multiple ingestion runs** — running the ingestion script multiple times created duplicate rows in BigQuery raw tables. Deliberately left in the raw layer as this is expected behaviour. Deduplication will be handled in dbt staging models using ROW_NUMBER() or DISTINCT, keeping the raw layer as an immutable audit trail.
 - **Understanding WRITE_TRUNCATE vs duplication** — initially confused about whether WRITE_TRUNCATE prevents duplicates in GCS or BigQuery. Clarification: GCS retains all historical files (intentional — immutable raw layer). WRITE_TRUNCATE wipes and reloads the BigQuery table on every run so duplicates never accumulate there. GCS is the filing cabinet that keeps everything. BigQuery raw is the whiteboard that gets erased and rewritten fresh every run.
 - **Always cd to project root before running pytest** — pytest must be run from the finance-pipeline root directory otherwise it can't find the tests folder. Always run `cd /Users/siddik/finance-pipeline` first.
+
+### Phase 4
+- **dbt project initialised in wrong subfolder** — dbt init 
+created files inside dbt/finance_pipeline/ instead of dbt/. 
+Fixed by moving all files up one level with mv finance_pipeline/* .
+- **BigQuery dataset location mismatch** — profiles.yml had 
+location set to EU but datasets were created in europe-west2. 
+Deleted and recreated datasets in correct region
+- **YAML files don't support comments** — added a comment 
+with # in sources.yml which caused a parsing error. YAML 
+comments behave differently to SQL comments. Removed the 
+comment to fix
+- **Missing comma caused silent UNION ALL failure** — missing 
+comma after CURRENCY column caused the model to fail. Always 
+check for trailing commas in SELECT statements
+- **Always run dbt from the dbt/ folder** — dbt must be run 
+from the folder containing dbt_project.yml. Running from a 
+subfolder causes "selection criterion does not match any 
+enabled nodes" error
+- **BigQuery doesn't support subqueries in JOIN predicates** — 
+attempted to use a subquery directly in the ON clause of a 
+JOIN. BigQuery rejected this. Fixed by pre-calculating the 
+latest macro date in a separate CTE first
+- **Invisible characters from copy/paste** — copying SQL from 
+messaging apps introduced invisible unicode characters causing 
+syntax errors. Always retype code in VS Code rather than 
+pasting from phone
