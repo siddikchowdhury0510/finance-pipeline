@@ -1,0 +1,63 @@
+WITH
+MACRO_PIVOT AS (
+    SELECT
+        DATE,
+        MAX(CASE WHEN INDICATOR = 'inflation' THEN VALUE END) AS INFLATION,
+        MAX(CASE WHEN INDICATOR = 'interest' THEN VALUE END) AS INTEREST_RATES,
+        MAX(CASE WHEN INDICATOR = 'gdp' THEN VALUE END) AS GDP,
+        MAX(CASE WHEN INDICATOR = 'unemployment' THEN VALUE END) AS UNEMPLOYMENT
+    FROM {{ ref('stg_macro') }}
+    GROUP BY DATE
+
+),
+
+MARKET_WITH_MACRO_DATE AS (
+    SELECT
+        MD.*,
+        (
+            SELECT MAX(MP.DATE)
+            FROM MACRO_PIVOT MP
+            WHERE MP.DATE <= MD.DATE
+            AND MP.INFLATION IS NOT NULL
+        ) AS LATEST_MONTHLY_DATE,
+        (
+            SELECT MAX(MP.DATE)
+            FROM MACRO_PIVOT MP
+            WHERE MP.DATE <= MD.DATE
+            AND MP.GDP IS NOT NULL
+        ) AS LATEST_QUARTERLY_DATE
+    FROM {{ ref('mart_market_daily') }} MD
+),
+
+FINAL AS (
+    SELECT
+        M.DATE,
+        M.TICKER,
+        M.ASSET_TYPE,
+        M.CURRENCY,
+        M.OPEN,
+        M.CLOSE,
+        M.PRICE_CHANGE,
+        M.PRICE_CHANGE_PCT,
+        M.HIGH,
+        M.LOW,
+        M.DAILY_RANGE,
+        M.VOLUME_M,
+        MONTHLY.INFLATION,
+        MONTHLY.INTEREST_RATES,
+        MONTHLY.UNEMPLOYMENT,
+        QUARTERLY.GDP,
+        CURRENT_TIMESTAMP() AS LAST_UPDATED
+    FROM MARKET_WITH_MACRO_DATE M
+    LEFT JOIN MACRO_PIVOT MONTHLY
+        ON MONTHLY.DATE = M.LATEST_MONTHLY_DATE
+    LEFT JOIN MACRO_PIVOT QUARTERLY
+        ON QUARTERLY.DATE = M.LATEST_QUARTERLY_DATE
+)
+
+SELECT * FROM FINAL
+
+
+
+
+
