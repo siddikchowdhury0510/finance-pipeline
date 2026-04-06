@@ -23,7 +23,7 @@ FINAL AS (
         CAST(VALUE AS FLOAT64) AS VALUE,
         INGESTED_AT
     FROM DEDUPED
-    where ROW_NUM= 1 
+    WHERE ROW_NUM= 1 
     AND VALUE IS NOT NULL -- remove historic NULL values
 
 )
