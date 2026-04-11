@@ -17,7 +17,7 @@ Tiingo/FRED APIs -> GCS (raw layer) -> BigQuery -> dbt -> Looker Studio
 - **Visualisation:** Looker Studio
 - **Containerisation:** Docker (Phase 7)
 - **Version Control:** Github
-- **Project Management** Jira
+- **Project Management:** Jira
 
 ## Why I built this
 
