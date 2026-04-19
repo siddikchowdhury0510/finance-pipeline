@@ -178,6 +178,9 @@ In production (Cloud Composer), Git sync replaces this manual step.
 - **Timestamped filenames** — every file includes the run timestamp so historical runs are preserved and never overwritten. Critical for reprocessing and debugging.
 - **SSL fix for FRED on macOS** — macOS Python requires an explicit SSL context override for FRED API calls. Added ssl.create_unverified_context as a workaround.
 - **run_all.py as single entry point** — rather than running three scripts separately, a single orchestration script imports and calls all three ingestion functions in sequence. This mirrors how Airflow triggers the pipeline in Phase 5 and makes local testing simple with one command: `cd ingestion && python run_all.py`
+- **Unit tests with mocked external dependencies** - ingestion tests use 'unittest.mock' and '@patch' to intercept 'requests.get', 'storage.Client' and 'Fred' before they make real API or GCS calls. This means tests run instantly, cost nothing, and pass regardless of whether external services are available. The real function code executes - only the external calls are replaced with fakes that return controlled data.
+- **Testing error handling explicitly** - each ingestion function wraps individual API calls in try/excpet to prevent one failure stopping the whole pipeline. Tests verify this behaviour directly by setting 'side_effect = Exception(...)' on the mock and confirming the function completes without raising.
+- **Testing behaviour not implentation** -tests assert what the function does (calls the right URLs, uploads to the right GCS paths, raises errors on missing config) rather that what it returns. This makes tests resilient to internal refactoring.
 
 ### Phase 3
 
@@ -227,6 +230,9 @@ Singular tests written as raw SQL in 'dbt/tests/' for non-negative price validat
 - **Silent script failures** — early runs produced no output due to typos in variable names being caught silently by the except block. Lesson: always test error handling explicitly.
 - **Verified raw JSON structure before moving to loading** — opened AAPL JSON in GCS to confirm data quality before building the loading layer.
 - **Git merge conflicts** — repeatedly hit merge conflicts on README.md caused by making changes both locally and on GitHub without pulling first. Key lesson: always run `git pull origin main` before making any local changes.
+- **Initial tests were testing Python not application code** - first test suite created hardcoded data structures and asserted properties of those structures. The actual ingestion functions were never called, meaning tests would pass even if the scripts were deleted. Rebuilt using '@patch' to import and execute real functions with mocked dependencies.
+- **@patch path must match where the function is imported** - patching 'requests.get' globally doesn't work. Yo must patch it at the module level where it is used, e.g. '@patch('tiingo_stocks.requests.get')'. If the path is wrong the mock is never applied and the real API gets called.
+- **MAgicMock chains for GCS** - 'storage.Client()' returns a client, '.bucket()' returns a bucket, '.blob()' reutns a blob. Each step in the chain must be mocked. 'MagicMock' handles this automatically as it returns a new 'MagicMock' for any attribute access or method call.
 
 ### Phase 3
 
