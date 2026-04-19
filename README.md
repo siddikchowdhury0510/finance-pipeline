@@ -193,6 +193,12 @@ In production (Cloud Composer), Git sync replaces this manual step.
 - **dbt location must match BigQuery dataset location** — profiles.yml location must be europe-west2 not EU. EU is a multi-region, europe-west2 is a specific region. Mismatch causes dataset not found errors.
 - **Pivot pattern for macro correlation mart** — used CASE WHEN with MAX to pivot indicator rows into columns. Separate latest date CTEs for monthly and quarterly indicators to handle different data frequencies.
 - **NULL values filtered at staging layer** — FRED data contains NULL values for certain historical dates. Filtered in stg_macro FINAL CTE so NULLs never propagate to downstream models.
+- **dbt Testing Strategy** - Added dbt_utils package to enable 'unique_conbination_of_columns' tests on composite keys (ticker +date for stocks/ crypto, indicator + date for macro). dbt's built-in 'unique' test only works on single columns, so dbt_utils is required for compostite key validation. This is the industry standard approach on professional dbt projects.
+
+Singular tests written as raw SQL in 'dbt/tests/' for non-negative price validation on stocks and crypto. These return zero rows on pass, which is how dbt evaluates signluar tests. Business logic that generic tests cannot express belongs here.
+
+'packages.yml' must live inside the 'dbt/' folder alongside 'dbt_project.yml', and 'dbt deps' must be run from that same directory.
+
 
 ### Phase 5
 
@@ -237,6 +243,7 @@ In production (Cloud Composer), Git sync replaces this manual step.
 - **Always run dbt from the dbt/ folder** — dbt must be run from the folder containing dbt_project.yml.
 - **BigQuery doesn’t support subqueries in JOIN predicates** — fixed by pre-calculating the latest macro date in a separate CTE first.
 - **Invisible characters from copy/paste** — copying SQL from messaging apps introduced invisible unicode characters causing syntax errors. Always retype code in VS Code rather than pasting from phone.
+- **dbt test: REF macro is case sensitive** Singluar test failed because I forgot to turn off caps lock. Regardless, dbt's Jinja macros are case- sensitive.
 
 ### Phase 5
 
