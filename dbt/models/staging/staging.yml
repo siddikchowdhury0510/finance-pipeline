@@ -3,6 +3,11 @@ version: 2
 models:
   - name: stg_stocks
     description: "Cleaned and deduplicated stock prices from Tiingo"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ticker
+            - date
     columns:
       - name: ticker
         description: "Stock ticker symbol"
@@ -21,6 +26,11 @@ models:
 
   - name: stg_crypto
     description: "Cleaned and deduplicated crypto prices from Tiingo"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ticker
+            - date
     columns:
       - name: ticker
         tests:
@@ -34,6 +44,11 @@ models:
 
   - name: stg_macro
     description: "Cleaned macro economic indicators from FRED"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - indicator
+            - date
     columns:
       - name: indicator
         tests:
@@ -46,3 +61,5 @@ models:
       - name: value
         tests:
           - not_null
+
+
